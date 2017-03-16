@@ -36,9 +36,13 @@ Game.prototype.next = function () {
 	inquirer.prompt({
 		type: 'list',
 		name: 'next',
-		message: generateWord(),
+		message: this.generateWord(),
 		choices: ['Next (n)', 'Pass (p)']
 	})
+}
+
+Game.prototype.generateWord = function () {
+
 }
 
 const game = new Game();

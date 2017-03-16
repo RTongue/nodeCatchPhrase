@@ -13,7 +13,7 @@ const inquirer = require('inquirer');
 function Game () {
 	this.team1 = 0;
 	this.team2 = 0;
-	this.teamInPlay = 'team1';
+	this.teamInPlay = 'Team one';
 	this.timer = null;
 }
 
@@ -24,7 +24,25 @@ Game.prototype.start = function () {
 			name: 'start',
 			message: `${this.teamInPlay}, you\'re up first.`,
 			choices: ['Next (n)', 'Quit (q)']
-		});	
+		})	
+	.then(answer => {
+		if (answer.start === 'Next (n)') {
+			this.next();
+		}
+	})
+}
+
+Game.prototype.next = function () {
+	inquirer.prompt({
+		type: 'list',
+		name: 'next',
+		message: this.generateWord(),
+		choices: ['Next (n)', 'Pass (p)']
+	})
+}
+
+Game.prototype.generateWord = function () {
+
 }
 
 const game = new Game();
