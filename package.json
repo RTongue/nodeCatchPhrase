@@ -1,0 +1,12 @@
+{
+  "name": "nodecatchphrase",
+  "version": "1.0.0",
+  "description": "An implementation of Catch Phrase for node",
+  "main": "game.js",
+  "scripts": {
+		"start": "node game.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
