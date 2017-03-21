@@ -37,6 +37,7 @@ Game.prototype.start = function () {
 	.then(answer => {
 		if (answer.start === 'Next (n)') {
 			this.next();
+			this.startTimer();
 		}
 	});
 };
@@ -48,7 +49,10 @@ Game.prototype.next = function () {
 		message: this.generateWord(),
 		choices: ['Next (n)', 'Pass (p)']
 	})
-	.then(answer => console.log(answer));
+	.then(answer => {
+		console.log('got an answer');
+		if (!this.timer) this.startTimer();	
+	});
 };
 
 Game.prototype.generateWord = function () {
@@ -58,5 +62,21 @@ Game.prototype.generateWord = function () {
 	fs.writeFileSync('./index.txt', index + 1, 'utf8');
 	return word;
 };
+
+Game.prototype.startTimer = function () {
+	this.timer = setInterval(() => console.log('beep'), 1500);
+	setTimeout(() => {
+		clearInterval(this.timer);
+		this.timer = setInterval(() => console.log('beep'), 1000);
+		setTimeout(() => {
+			clearInterval(this.timer);	
+			this.timer = setInterval(() => console.log('beep'), 500);
+			setTimeout(() => {
+				clearInterval(this.timer);
+				console.log('BBBEEEEEEEEEEEEEEEEEEEEEEEEEEPPPPPPPPPPPPP!!!!!!!!!!!!!!');
+			}, 2500);
+		}, 5000)
+	}, 10000);
+}
 
 module.exports = Game;
