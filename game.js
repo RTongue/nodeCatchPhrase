@@ -10,6 +10,7 @@
  */
 const inquirer = require('inquirer');
 const fs = require('fs');
+const sfx = require('sfx');
 const dict = require('./dictionary');
 
 function Team (name) {
@@ -55,6 +56,19 @@ Game.prototype.next = function () {
 	});
 };
 
+Game.prototype.addPlayer = function (player) {
+	let team;
+	if (this.team1.players.length > this.team2.players.length) {
+		team = this.team2;
+	} else if (this.team2.players.length > this.team1.players.length) {
+		team = this.team1;
+	} else {
+		team = Math.random() > 0.5 ? this.team1 : this.team2;
+	}
+
+	team.players.push(player);
+}
+
 Game.prototype.generateWord = function () {
 	const wordBank = dict[this.topic];
 	const index = parseInt(fs.readFileSync('./index.txt', 'utf8'), 10) % wordBank.length;
@@ -64,19 +78,22 @@ Game.prototype.generateWord = function () {
 };
 
 Game.prototype.startTimer = function () {
-	this.timer = setInterval(() => console.log('beep'), 1500);
+	sfx.ping();
+	this.timer = setInterval(sfx.ping, 1500);
 	setTimeout(() => {
 		clearInterval(this.timer);
-		this.timer = setInterval(() => console.log('beep'), 1000);
+		sfx.ping();
+		this.timer = setInterval(sfx.ping, 1000);
 		setTimeout(() => {
 			clearInterval(this.timer);	
-			this.timer = setInterval(() => console.log('beep'), 500);
+			sfx.ping();
+			this.timer = setInterval(sfx.ping, 500);
 			setTimeout(() => {
 				clearInterval(this.timer);
-				console.log('BBBEEEEEEEEEEEEEEEEEEEEEEEEEEPPPPPPPPPPPPP!!!!!!!!!!!!!!');
-			}, 2500);
-		}, 5000)
-	}, 10000);
+				sfx.basso(100);
+			}, 5001);
+		}, 10001)
+	}, 12001);
 }
 
 module.exports = Game;
