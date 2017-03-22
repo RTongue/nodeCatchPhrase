@@ -3,6 +3,7 @@ const columnify = require('columnify');
 const _ = require('lodash');
 const EOL = require('os').EOL;
 const dEOL = EOL + EOL;
+const { clear } = require('./utils');
 
 const Game = require('./game.js');
 
@@ -24,9 +25,9 @@ telnetServer.listen(PORT, () => {
 
 telnetServer.on('connection', (connection) => {
 				
-	connection.write('\033[2J');
-	connection.write('\033[0f');
-	connection.write('Welcome to Node Catch Phrase!' + EOL);
+	clear(connection);
+	connection.write('Welcome to Node Catch Phrase!\n');
+	connection.write('Tell us your name: ');
 
 	connection.on('end', () => {
 		let idx = connections.indexOf(connection);
@@ -38,24 +39,39 @@ telnetServer.on('connection', (connection) => {
 	const preGameMessage = () => {
 		const team1Names = newGame.team1.players.map(player => player.name);
 		const team2Names = newGame.team2.players.map(player => player.name);
+		// push an empty string to make sure there's a key 
+		// for every value when we zip the arrays to an object
+		team1Names.push('');
+		team2Names.push('');
+
 		let playerPairs = _.zipObject(team1Names, team2Names);
-		return columnify(playerPairs, {columns: ['TEAM1', 'TEAM2']}) + '\nWhen all players have joined\npress ENTER to start!';
+		return 'You\'re playing with:\n' + columnify(playerPairs, {columns: ['TEAM1', 'TEAM2']}) + '\nWhen all players have joined\npress ENTER to start!';
 	}
 
 	const preGame = (input) => {
-		console.log(input);
-		connection.write(pregameMessage());
+		if (input && input.includes(13)) {
+			
+		} else {
+			connections.forEach(cnxn => {
+				clear(cnxn);
+				cnxn.write(preGameMessage());
+			});
+		}
 	}
 
 	const receiveName = (name) => {
+		clear(connection);
 		// add to collection of connections
 		connection.name = name.toString().trim();
 		connections.push(connection);
 		// add player to a team
 		newGame.addPlayer(connection);
+		addPlayerPromise.then(() => {
+			console.log('IN THE DOT THEN!!!!!!!!');
+			preGame(null);
+		});
 		// Remove receive name listener
 		connection.removeListener('data', receiveName);
-		connection.write(preGameMessage());
 		connection.on('data', preGame);
 	};
 	

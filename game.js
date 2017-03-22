@@ -67,6 +67,8 @@ Game.prototype.addPlayer = function (player) {
 	}
 
 	team.players.push(player);
+	console.log('we got here');
+	resolve();
 }
 
 Game.prototype.generateWord = function () {
