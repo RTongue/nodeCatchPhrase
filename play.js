@@ -50,7 +50,7 @@ telnetServer.on('connection', (connection) => {
 
 	const preGame = (input) => {
 		if (input && input.includes(13)) {
-			
+			newGame.start();	
 		} else {
 			connections.forEach(cnxn => {
 				clear(cnxn);
@@ -66,10 +66,7 @@ telnetServer.on('connection', (connection) => {
 		connections.push(connection);
 		// add player to a team
 		newGame.addPlayer(connection);
-		addPlayerPromise.then(() => {
-			console.log('IN THE DOT THEN!!!!!!!!');
-			preGame(null);
-		});
+		preGame(null);
 		// Remove receive name listener
 		connection.removeListener('data', receiveName);
 		connection.on('data', preGame);

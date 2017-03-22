@@ -28,7 +28,6 @@ function Game () {
 }
 
 Game.prototype.start = function () {
-	console.log('Welcome to Catch Phrase!');
 	inquirer.prompt({
 			type: 'list',
 			name: 'start',
@@ -52,7 +51,7 @@ Game.prototype.next = function () {
 	})
 	.then(answer => {
 		console.log('got an answer');
-		if (!this.timer) this.startTimer();	
+		if (!this.timer) this.startTimer();
 	});
 };
 
@@ -67,14 +66,12 @@ Game.prototype.addPlayer = function (player) {
 	}
 
 	team.players.push(player);
-	console.log('we got here');
-	resolve();
 }
 
 Game.prototype.generateWord = function () {
 	const wordBank = dict[this.topic];
 	const index = parseInt(fs.readFileSync('./index.txt', 'utf8'), 10) % wordBank.length;
-	const word = wordBank[index];	
+	const word = wordBank[index];
 	fs.writeFileSync('./index.txt', index + 1, 'utf8');
 	return word;
 };
@@ -87,7 +84,7 @@ Game.prototype.startTimer = function () {
 		sfx.ping();
 		this.timer = setInterval(sfx.ping, 1000);
 		setTimeout(() => {
-			clearInterval(this.timer);	
+			clearInterval(this.timer);
 			sfx.ping();
 			this.timer = setInterval(sfx.ping, 500);
 			setTimeout(() => {
