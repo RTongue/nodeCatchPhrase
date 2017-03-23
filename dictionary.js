@@ -22,6 +22,7 @@ module.exports = {
 		'String Concatenation',
 		'Class',
 		'Boolean',
+		'Node',
 		'Console.log',
 		'Prototype',
 		'Arity',

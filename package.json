@@ -1,13 +1,13 @@
 {
   "name": "nodecatchphrase",
   "version": "1.0.0",
-  "description": "An implementation of Catch Phrase for node",
+  "description": "An implementation of Catch Phrase for node using JavaScript terminology",
   "main": "game.js",
   "scripts": {
     "start": "node play.js",
     "test": "mocha --watch"
   },
-  "author": "",
+  "author": "Robbyn Tongue",
   "license": "ISC",
   "dependencies": {
     "chai": "^3.5.0",

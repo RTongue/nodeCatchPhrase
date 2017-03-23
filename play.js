@@ -1,19 +1,11 @@
 const net = require('net');
 const columnify = require('columnify');
-const chalk = require('chalk')
+const chalk = require('chalk');
 const _ = require('lodash');
-const EOL = require('os').EOL;
-const dEOL = EOL + EOL;
 const { clear } = require('./utils');
 
 const Game = require('./game.js');
-
-function play (game) {
-	game.start();
-}
-
 const newGame = new Game();
-// play(newGame);
 
 const telnetServer = net.createServer();
 const PORT = 7777;
@@ -26,6 +18,7 @@ telnetServer.listen(PORT, () => {
 
 telnetServer.on('connection', (connection) => {
 
+	// Greet the newly connected player
 	clear(connection);
 	connection.write(chalk.cyan('Welcome to Node Catch Phrase!\n'));
 	connection.write(chalk.cyan('Tell us your name: '));
@@ -34,8 +27,6 @@ telnetServer.on('connection', (connection) => {
 		let idx = connections.indexOf(connection);
 		connections = connections.splice(idx, 1);
 	});
-
-	const extraNewline = () => connection.write(EOL);
 
 	const preGameMessage = () => {
 		const team1Names = newGame.team1.players.map(player => chalk.yellow(player.name));
@@ -51,9 +42,9 @@ telnetServer.on('connection', (connection) => {
 
 	const preGame = (input) => {
 		if (input && input.includes(13)) {
-			connections.forEach(cnxn => {
-				cnxn.removeAllListeners('data');
-			});
+			// connections.forEach(cnxn => {
+			// 	cnxn.removeAllListeners('data');
+			// });
 			newGame.allPlayers = connections;
 			newGame.start();
 		} else {
@@ -77,7 +68,6 @@ telnetServer.on('connection', (connection) => {
 		connection.on('data', preGame);
 	};
 
-	connection.on('data', extraNewline);
 	connection.on('data', receiveName);
 
 });

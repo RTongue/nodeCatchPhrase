@@ -24,7 +24,7 @@ const utils = {
 				connection.write(message);
 			}
 			calls++;
-		},750)
+		}, 750)
 	}
 };
 

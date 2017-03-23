@@ -1,7 +1,8 @@
 /* Game functionality:
- * - Game starts when a user runs start script
- * - A player types next (n) to signify the next player
- * - A player types pass (p) to pass and get the next term
+ * - Game starts when all players have joined and
+ *   someone pushes enter
+ * - A player types 'n' (next) to signify the next player
+ * - A player types 'p' (pass) to pass and get the next term
  * - Game state tracks which team is currently in play
  * - When the buzzer goes off, the team which is
  *   not currently in play gets a point
@@ -24,6 +25,8 @@ function Team (name) {
 	this.currentPlayer = null;
 }
 
+// Currently doesn't work as columnify won't
+// display the styled headers?
 Team.prototype.styleName = function (color) {
 	return chalk[color]('TEAM' + this.name);
 };
@@ -43,6 +46,8 @@ function Game () {
 }
 
 Game.prototype.start = function () {
+	this.allPlayers.forEach(plyr => plyr.removeAllListeners('data'));
+
 	if (!this.wordBank) {
 		this.wordBank = dict[this.topic];
 		this.wordBankLength = this.wordBank.length;
@@ -78,13 +83,13 @@ Game.prototype.turn = function (input) {
 
 		// Move player pointer for current team
 		this.teamInPlay.currentPlayer = this.teamInPlay.currentPlayer >= (this.teamInPlay.players.length - 1)
-		? 0
-		: (this.teamInPlay.currentPlayer + 1);
+																			? 0
+																			: (this.teamInPlay.currentPlayer + 1);
 
 		// Set currentPlayer
 		this.currentPlayer = this.teamInPlay.players[this.teamInPlay.currentPlayer];
 
-		// Print message for this turn
+		// Print next message for this turn
 		this.next();
 	}
 };
@@ -107,20 +112,18 @@ Game.prototype.next = function () {
 
 	// Give player word to guess
 	player.write(this.guessWordMessage());
-	// (`${player.name}, you're turn!\n---> ${this.generateWord()} <---\nNext => (n)\nPass => (p)\n`);
 
 	// Get all teamMates minus player
 	const teamMates = _.without(this.teamInPlay.players, player);
+
 	// Tell them to guess
 	teamMates.forEach(cnxn => {
 		this.blinkers.push(blink(cnxn, chalk.yellow.bold('GUESS!!!'), 'bgGreen'));
-		// cnxn.write(chalk.yellow.bgGreen.bold('GUESS!!!'));
 	});
 
 	// Tell the other team to wait
 	this.nextTeam.players.forEach(cnxn => {
-		this.blinkers.push(blink(cnxn, chalk.yellow.bold('WAIT!!!'), 'bgRed'));
-		// cnxn.write(chalk.yellow.bgRed.bold('WAIT...'));
+		this.blinkers.push(blink(cnxn, chalk.yellow.bold('WAIT...'), 'bgRed'));
 	});
 };
 
@@ -163,39 +166,51 @@ Game.prototype.startTimer = function () {
 			sfx.ping();
 			this.timer = setInterval(sfx.ping, 500);
 			setTimeout(() => {
-				clearInterval(this.timer);
-				this.timer = null;
-				sfx.basso(100);
-				clearAll(this.allPlayers, this.blinkers);
-				const scoringTeam = this.teamInPlay === this.team1
-															? this.team2
-															: this.team1;
-				scoringTeam.score++;
-				const team1 = this.team1.score;
-				const team2 = this.team2.score;
-				const currentPlayer = this.teamInPlay.players[this.teamInPlay.currentPlayer];
-				let winner;
-				if (team1 === 10) {
-					winner = this.team1.name;
-				} else if (team2 === 10) {
-					winner = this.team2.name;
-				}
-				if (winner) {
-					this.allPlayers.forEach(player => {
-						player.write(`${winner.toUpperCase()} WINS!!!`);
-					});
-				} else {
-					let scores = {};
-					scores[team1] = team2;
-					this.allPlayers.forEach(player => {
-						player.write('CURRENT SCORE\n' + columnify(scores, {columns: ['TEAM1', 'TEAM2']}) + `\n${currentPlayer.name}, hit enter to start.`);
-						player.removeAllListeners('data');
-					});
-					currentPlayer.on('data', this.start.bind(this));
-				}
+				this.endRound();
 			}, Math.floor(Math.random() * 10000));
 		}, Math.floor(Math.random() * 25000));
 	}, Math.floor(Math.random() * 50000));
+};
+
+Game.prototype.endRound = function () {
+	// Clear the timer and messages
+	clearInterval(this.timer);
+	this.timer = null;
+	sfx.basso(100);
+	clearAll(this.allPlayers, this.blinkers);
+
+	// Give next team a point
+	this.nextTeam.score++;
+
+	const team1 = this.team1.score;
+	const team2 = this.team2.score;
+	const currentPlayer = this.teamInPlay.players[this.teamInPlay.currentPlayer];
+	let winner;
+	let scores = {};
+	scores[team1] = team2;
+
+	// Check for a winner
+	if (team1 === 10) {
+		winner = this.team1.name;
+	} else if (team2 === 10) {
+		winner = this.team2.name;
+	}
+
+	if (winner) {
+		this.team1.score = 0;
+		this.team2.score = 0;
+		this.allPlayers.forEach(player => {
+			player.write(chalk.red.bold(`TEAM ${winner.toUpperCase()} WINS!!!\n`));
+			player.write(chalk.cyan(chalk.underline(`Final Score:\n`) + columnify(scores, {columns: ['TEAM1', 'TEAM2']}) + `\nHit enter to start next round.`));
+			player.on('data', this.start.bind(this));
+		});
+	} else {
+		this.allPlayers.forEach(player => {
+			player.write(chalk.cyan('CURRENT SCORE\n' + columnify(scores, {columns: ['TEAM1', 'TEAM2']}) + chalk.red.bold(`\n${currentPlayer.name}`) + `, hit enter to start.`));
+			player.removeAllListeners('data');
+		});
+		currentPlayer.on('data', this.start.bind(this));
+	}
 };
 
 module.exports = Game;
