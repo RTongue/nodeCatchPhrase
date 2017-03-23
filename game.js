@@ -12,8 +12,9 @@
 const fs = require('fs');
 const sfx = require('sfx');
 const columnify = require('columnify');
+const chalk = require('chalk');
 const _ = require('lodash');
-const { clear } = require('./utils');
+const { clear, clearAll } = require('./utils');
 const dict = require('./dictionary');
 
 function Team (name) {
@@ -28,6 +29,8 @@ function Game () {
 	this.team2 = new Team('2');
 	this.allPlayers = null;
 	this.teamInPlay = null;
+	this.nextTeam = null;
+	this.currentPlayer = null;
 	this.topic = 'javascript';
 	this.wordBank = null;
 	this.wordBankLength = null;
@@ -39,67 +42,78 @@ Game.prototype.start = function () {
 		this.wordBank = dict[this.topic];
 		this.wordBankLength = this.wordBank.length;
 		const coinToss = Math.random();
-		this.teamInPlay = coinToss > 0.5
-			? this.team1
-			: this.team2;
+		if (coinToss > 0.5) {
+			this.teamInPlay = this.team1;
+			this.nextTeam = this.team2;
+		} else {
+			this.teamInPlay = this.team2;
+			this.nextTeam = this.team1;
+		}
 
 		this.teamInPlay.currentPlayer = Math.floor(coinToss * 10) % this.teamInPlay.players.length;
 	}
 
 	if (!this.timer) {
-		this.next();
+		this.turn(null);
 		this.startTimer();
 	}
 };
 
-Game.prototype.pass = function (input) {
-	if (input && input.includes(32)) {
-		console.log('in the condition');
-		const player = this.teamInPlay.players[this.teamInPlay.currentPlayer];
-		console.log(player.name);
-		player.once('data', this.next.bind(this));
-		clear(player);
-		player.write(`${player.name}, you're turn!\n---> ${this.generateWord()} <---\nNext => Enter\nPass => Space`);
-		player.once('data', this.next.bind(this));
-		player.once('data', this.pass.bind(this));
+Game.prototype.turn = function (input) {
+	if (input && input.includes(112)) {
+		this.pass();
+	}	else {
+		// Clear screen for next turn
+		clearAll(this.allPlayers);
+
+		// On each turn, switch current team
+		let holdTeam = this.nextTeam;
+		this.nextTeam = this.teamInPlay;
+		this.teamInPlay = holdTeam;
+
+		// Move player pointer for current team
+		this.teamInPlay.currentPlayer = this.teamInPlay.currentPlayer >= (this.teamInPlay.players.length - 1)
+		? 0
+		: (this.teamInPlay.currentPlayer + 1);
+
+		// Set currentPlayer
+		this.currentPlayer = this.teamInPlay.players[this.teamInPlay.currentPlayer];
+
+		// Print message for this turn
+		this.next();
 	}
 };
 
-Game.prototype.next = function (input) {
-	if (input && input.includes(32)) return;
-	let player;
-	let opponent = this.teamInPlay.name === '1'
-									? this.team2
-									: this.team1;
-
-	if (opponent.currentPlayer === null) {
-		opponent.currentPlayer = Math.floor(Math.random() * 10) % opponent.players.length;
-	} else {
-		let nextTeam = this.teamInPlay;
-		this.teamInPlay = opponent;
-		opponent = nextTeam;
-	}
-	player = this.teamInPlay.players[this.teamInPlay.currentPlayer];
-	player.once('data', this.next.bind(this));
-	player.once('data', this.pass.bind(this));
+Game.prototype.pass = function () {
+	const player = this.currentPlayer;
+	// Register turn to player again
+	player.once('data', this.turn.bind(this));
+	// Clear player's screen only
 	clear(player);
-	player.write(`${player.name}, you're turn!\n---> ${this.generateWord()} <---\nNext => Enter\nPass => Space`);
+	// Give them a new word
+	player.write(chalk.blue(`${player.name}, you're turn!\n---> ${this.generateWord()} <---\nNext => (n)\nPass => (p)\n`));
+};
 
+Game.prototype.next = function () {
+	let player = this.currentPlayer;
+
+	// Register turn once on next data event
+	player.once('data', this.turn.bind(this));
+
+	// Give player word to guess
+	player.write(`${player.name}, you're turn!\n---> ${this.generateWord()} <---\nNext => (n)\nPass => (p)\n`);
+
+	// Get all teamMates minus player
 	const teamMates = _.without(this.teamInPlay.players, player);
+	// Tell them to guess
 	teamMates.forEach(cnxn => {
-		clear(cnxn);
 		cnxn.write('GUESS!!!');
 	});
 
-	opponent.players.forEach(cnxn => {
-		clear(cnxn);
+	// Tell the other team to wait
+	this.nextTeam.players.forEach(cnxn => {
 		cnxn.write('WAIT...');
 	});
-
-	// Move player pointer for current team
-	this.teamInPlay.currentPlayer = this.teamInPlay.currentPlayer >= (this.teamInPlay.players.length - 1)
-	? 0
-	: (this.teamInPlay.currentPlayer + 1);
 };
 
 Game.prototype.addPlayer = function (player) {

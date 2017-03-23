@@ -1,5 +1,6 @@
 const net = require('net');
 const columnify = require('columnify');
+const chalk = require('chalk')
 const _ = require('lodash');
 const EOL = require('os').EOL;
 const dEOL = EOL + EOL;
@@ -26,8 +27,8 @@ telnetServer.listen(PORT, () => {
 telnetServer.on('connection', (connection) => {
 
 	clear(connection);
-	connection.write('Welcome to Node Catch Phrase!\n');
-	connection.write('Tell us your name: ');
+	connection.write(chalk.cyan('Welcome to Node Catch Phrase!\n'));
+	connection.write(chalk.cyan('Tell us your name: '));
 
 	connection.on('end', () => {
 		let idx = connections.indexOf(connection);
@@ -37,19 +38,18 @@ telnetServer.on('connection', (connection) => {
 	const extraNewline = () => connection.write(EOL);
 
 	const preGameMessage = () => {
-		const team1Names = newGame.team1.players.map(player => player.name);
-		const team2Names = newGame.team2.players.map(player => player.name);
+		const team1Names = newGame.team1.players.map(player => chalk.green(player.name));
+		const team2Names = newGame.team2.players.map(player => chalk.magenta(player.name));
 		// push an empty string to make sure there's a key
 		// for every value when we zip the arrays to an object
 		team1Names.push('');
 		team2Names.push('');
 
 		let playerPairs = _.zipObject(team1Names, team2Names);
-		return 'You\'re playing with:\n' + columnify(playerPairs, {columns: ['TEAM1', 'TEAM2']}) + '\nWhen all players have joined\npress ENTER to start!';
+		return chalk.cyan('You\'re playing with:\n') + columnify(playerPairs, {columns: [chalk.green('TEAM1'), chalk.magenta('TEAM2')]}) + chalk.cyan('\nWhen all players have joined\npress ENTER to start!');
 	};
 
 	const preGame = (input) => {
-		console.log('calling pregame');
 		if (input && input.includes(13)) {
 			connections.forEach(cnxn => {
 				cnxn.removeAllListeners('data');
