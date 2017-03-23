@@ -24,40 +24,45 @@ telnetServer.listen(PORT, () => {
 });
 
 telnetServer.on('connection', (connection) => {
-				
+
 	clear(connection);
 	connection.write('Welcome to Node Catch Phrase!\n');
 	connection.write('Tell us your name: ');
 
 	connection.on('end', () => {
 		let idx = connections.indexOf(connection);
-		connections = connections.splice(idx, 1);		
+		connections = connections.splice(idx, 1);
 	});
 
 	const extraNewline = () => connection.write(EOL);
-	
+
 	const preGameMessage = () => {
 		const team1Names = newGame.team1.players.map(player => player.name);
 		const team2Names = newGame.team2.players.map(player => player.name);
-		// push an empty string to make sure there's a key 
+		// push an empty string to make sure there's a key
 		// for every value when we zip the arrays to an object
 		team1Names.push('');
 		team2Names.push('');
 
 		let playerPairs = _.zipObject(team1Names, team2Names);
 		return 'You\'re playing with:\n' + columnify(playerPairs, {columns: ['TEAM1', 'TEAM2']}) + '\nWhen all players have joined\npress ENTER to start!';
-	}
+	};
 
 	const preGame = (input) => {
+		console.log('calling pregame');
 		if (input && input.includes(13)) {
-			newGame.start();	
+			connections.forEach(cnxn => {
+				cnxn.removeAllListeners('data');
+			});
+			newGame.allPlayers = connections;
+			newGame.start();
 		} else {
 			connections.forEach(cnxn => {
 				clear(cnxn);
 				cnxn.write(preGameMessage());
 			});
 		}
-	}
+	};
 
 	const receiveName = (name) => {
 		clear(connection);
@@ -71,7 +76,7 @@ telnetServer.on('connection', (connection) => {
 		connection.removeListener('data', receiveName);
 		connection.on('data', preGame);
 	};
-	
+
 	connection.on('data', extraNewline);
 	connection.on('data', receiveName);
 
