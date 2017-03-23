@@ -38,7 +38,7 @@ telnetServer.on('connection', (connection) => {
 	const extraNewline = () => connection.write(EOL);
 
 	const preGameMessage = () => {
-		const team1Names = newGame.team1.players.map(player => chalk.green(player.name));
+		const team1Names = newGame.team1.players.map(player => chalk.yellow(player.name));
 		const team2Names = newGame.team2.players.map(player => chalk.magenta(player.name));
 		// push an empty string to make sure there's a key
 		// for every value when we zip the arrays to an object
@@ -46,7 +46,7 @@ telnetServer.on('connection', (connection) => {
 		team2Names.push('');
 
 		let playerPairs = _.zipObject(team1Names, team2Names);
-		return chalk.cyan('You\'re playing with:\n') + columnify(playerPairs, {columns: [chalk.green('TEAM1'), chalk.magenta('TEAM2')]}) + chalk.cyan('\nWhen all players have joined\npress ENTER to start!');
+		return chalk.cyan('You\'re playing with:\n') + columnify(playerPairs, {columns: ['TEAM1', 'TEAM2']}) + chalk.cyan('\nWhen all players have joined\npress ENTER to start!');
 	};
 
 	const preGame = (input) => {

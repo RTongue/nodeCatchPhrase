@@ -1,11 +1,4 @@
-// const clear = function (connection) {
-// 	connection.write('\033[d2J');
-// 	connection.write('\033[0f');
-// };
-//
-// const clearAll = function (connections) {
-// 	connections.forEach(cnxn => clear(cnxn));
-// };
+const chalk = require('chalk');
 
 const utils = {
 	clear: connection => {
@@ -14,18 +7,20 @@ const utils = {
 	},
 	clearAll: connections => {
 		connections.forEach(cnxn => {utils.clear(cnxn)});
+	},
+	blink: (connection, message, bgColor) => {
+		let calls = 0;
+		return setInterval(() => {
+			if (calls % 2 === 0) {
+				utils.clear(connection);
+				connection.write(chalk[bgColor](message));
+			} else {
+				utils.clear(connection);
+				connection.write(message);
+			}
+			calls++;
+		},750)
 	}
-
 };
 
-module.exports = utils/*{
-	clear: connection => {
-		connection.write('\033[2J');
-		connection.write('\033[0f');
-	},
-	clearAll: connections => {
-		connections.forEach(cnxn => {this.clear(cnxn)});
-	}
-	// clear,
-	// clearAll
-};*/
+module.exports = utils

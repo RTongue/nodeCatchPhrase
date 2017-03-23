@@ -24,6 +24,10 @@ function Team (name) {
 	this.currentPlayer = null;
 }
 
+Team.prototype.styleName = function (color) {
+	return chalk[color]('TEAM' + this.name);
+};
+
 function Game () {
 	this.team1 = new Team('1');
 	this.team2 = new Team('2');
@@ -35,6 +39,7 @@ function Game () {
 	this.wordBank = null;
 	this.wordBankLength = null;
 	this.timer = null;
+	this.blinkers = [];
 }
 
 Game.prototype.start = function () {
@@ -91,7 +96,7 @@ Game.prototype.pass = function () {
 	// Clear player's screen only
 	clear(player);
 	// Give them a new word
-	player.write(chalk.blue(`${player.name}, you're turn!\n---> ${this.generateWord()} <---\nNext => (n)\nPass => (p)\n`));
+	player.write(this.guessWordMessage());
 };
 
 Game.prototype.next = function () {
@@ -101,18 +106,19 @@ Game.prototype.next = function () {
 	player.once('data', this.turn.bind(this));
 
 	// Give player word to guess
-	player.write(`${player.name}, you're turn!\n---> ${this.generateWord()} <---\nNext => (n)\nPass => (p)\n`);
+	player.write(this.guessWordMessage());
+	// (`${player.name}, you're turn!\n---> ${this.generateWord()} <---\nNext => (n)\nPass => (p)\n`);
 
 	// Get all teamMates minus player
 	const teamMates = _.without(this.teamInPlay.players, player);
 	// Tell them to guess
 	teamMates.forEach(cnxn => {
-		cnxn.write('GUESS!!!');
+		cnxn.write(chalk.yellow.bgGreen.bold('GUESS!!!'));
 	});
 
 	// Tell the other team to wait
 	this.nextTeam.players.forEach(cnxn => {
-		cnxn.write('WAIT...');
+		cnxn.write(chalk.yellow.bgRed.bold('WAIT...'));
 	});
 };
 
@@ -127,6 +133,12 @@ Game.prototype.addPlayer = function (player) {
 	}
 
 	team.players.push(player);
+};
+
+Game.prototype.guessWordMessage = function () {
+	let player = this.currentPlayer;
+
+	return `${chalk.red(player.name)}, you're turn!\n---> ${chalk.yellow(this.generateWord())} <---` + chalk.cyan(`\nNext => (n)`) + chalk.magenta(`\nPass => (p)\n`);
 };
 
 Game.prototype.generateWord = function () {
