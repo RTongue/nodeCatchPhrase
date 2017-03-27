@@ -28,7 +28,7 @@ const utils = {
 	},
 	randomTimeGenerator: (multiplyer) => {
     let rand = Math.random(); 
-		let int = Math.round(rand * 4 + 1); 
+		let int = Math.round(rand * 333 + 1); 
     return int * multiplyer;
 	}	
 };

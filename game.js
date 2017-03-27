@@ -15,7 +15,7 @@ const sfx = require('sfx');
 const columnify = require('columnify');
 const chalk = require('chalk');
 const _ = require('lodash');
-const { clear, clearAll, blink } = require('./utils');
+const { clear, clearAll, blink, randomTimeGenerator } = require('./utils');
 const dict = require('./dictionary');
 
 function Team (name) {
@@ -167,9 +167,9 @@ Game.prototype.startTimer = function () {
 			this.timer = setInterval(sfx.ping, 500);
 			setTimeout(() => {
 				this.endRound();
-			}, Math.floor(Math.random() * 10000));
-		}, Math.floor(Math.random() * 25000));
-	}, Math.floor(Math.random() * 50000));
+			}, randomTimeGenerator(15000));
+		}, randomTimeGenerator(25000));
+	}, randomTimeGenerator(45000));
 };
 
 Game.prototype.endRound = function () {
