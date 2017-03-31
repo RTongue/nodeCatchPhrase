@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* Game functionality:
  * - Game starts when all players have joined and
  *   someone pushes enter
@@ -26,8 +27,8 @@ function Team (name) {
 }
 
 // Currently doesn't work as columnify won't
-// display the styled headers?
-Team.prototype.styleName = function (color) {
+// display the styled headers
+Team.prototype.styleName = function styleName (color) {
 	return chalk[color]('TEAM' + this.name);
 };
 
@@ -45,7 +46,7 @@ function Game () {
 	this.blinkers = [];
 }
 
-Game.prototype.start = function () {
+Game.prototype.start = function start () {
 	this.allPlayers.forEach(plyr => plyr.removeAllListeners('data'));
 
 	if (!this.wordBank) {
@@ -69,7 +70,7 @@ Game.prototype.start = function () {
 	}
 };
 
-Game.prototype.turn = function (input) {
+Game.prototype.turn = function turn (input) {
 	if (input && input.includes(112)) {
 		this.pass();
 	}	else {
@@ -77,7 +78,7 @@ Game.prototype.turn = function (input) {
 		clearAll(this.allPlayers, this.blinkers);
 
 		// On each turn, switch current team
-		let holdTeam = this.nextTeam;
+		const holdTeam = this.nextTeam;
 		this.nextTeam = this.teamInPlay;
 		this.teamInPlay = holdTeam;
 
@@ -94,7 +95,7 @@ Game.prototype.turn = function (input) {
 	}
 };
 
-Game.prototype.pass = function () {
+Game.prototype.pass = function pass () {
 	const player = this.currentPlayer;
 	// Register turn to player again
 	player.once('data', this.turn.bind(this));
@@ -104,8 +105,8 @@ Game.prototype.pass = function () {
 	player.write(this.guessWordMessage());
 };
 
-Game.prototype.next = function () {
-	let player = this.currentPlayer;
+Game.prototype.next = function next () {
+	const player = this.currentPlayer;
 
 	// Register turn once on next data event
 	player.once('data', this.turn.bind(this));
@@ -127,7 +128,7 @@ Game.prototype.next = function () {
 	});
 };
 
-Game.prototype.addPlayer = function (player) {
+Game.prototype.addPlayer = function addPlayer (player) {
 	let team;
 	if (this.team1.players.length > this.team2.players.length) {
 		team = this.team2;
@@ -140,13 +141,13 @@ Game.prototype.addPlayer = function (player) {
 	team.players.push(player);
 };
 
-Game.prototype.guessWordMessage = function () {
-	let player = this.currentPlayer;
+Game.prototype.guessWordMessage = function guessWordMessage () {
+	const player = this.currentPlayer;
 
-	return `${chalk.red(player.name)}, you're turn!\n---> ${chalk.yellow(this.generateWord())} <---` + chalk.cyan(`\nNext => (n)`) + chalk.magenta(`\nPass => (p)\n`);
+	return `${chalk.red(player.name)}, you're turn!\n---> ${chalk.yellow(this.generateWord())} <---` + chalk.cyan('\nNext => (n)') + chalk.magenta('\nPass => (p)\n');
 };
 
-Game.prototype.generateWord = function () {
+Game.prototype.generateWord = function generateWord () {
 	let index = parseInt(fs.readFileSync('./index.txt', 'utf8'), 10);
 	if (index === this.wordBankLength) index = 0;
 	const word = this.wordBank[index];
@@ -154,7 +155,7 @@ Game.prototype.generateWord = function () {
 	return word;
 };
 
-Game.prototype.startTimer = function () {
+Game.prototype.startTimer = function startTimer () {
 	sfx.ping();
 	this.timer = setInterval(sfx.ping, 1500);
 	setTimeout(() => {
@@ -172,7 +173,7 @@ Game.prototype.startTimer = function () {
 	}, randomTimeGenerator(45000));
 };
 
-Game.prototype.endRound = function () {
+Game.prototype.endRound = function endRound () {
 	// Clear the timer and messages
 	clearInterval(this.timer);
 	this.timer = null;
@@ -186,7 +187,7 @@ Game.prototype.endRound = function () {
 	const team2 = this.team2.score;
 	const currentPlayer = this.teamInPlay.players[this.teamInPlay.currentPlayer];
 	let winner;
-	let scores = {};
+	const scores = {};
 	scores[team1] = team2;
 
 	// Check for a winner
@@ -201,12 +202,12 @@ Game.prototype.endRound = function () {
 		this.team2.score = 0;
 		this.allPlayers.forEach(player => {
 			player.write(chalk.red.bold(`TEAM ${winner.toUpperCase()} WINS!!!\n`));
-			player.write(chalk.cyan(chalk.underline(`Final Score:\n`) + columnify(scores, {columns: ['TEAM1', 'TEAM2']}) + `\nHit enter to start next round.`));
+			player.write(chalk.cyan(chalk.underline('Final Score:\n') + columnify(scores, { columns: ['TEAM1', 'TEAM2'] }) + '\nHit enter to start next round.'));
 			player.on('data', this.start.bind(this));
 		});
 	} else {
 		this.allPlayers.forEach(player => {
-			player.write(chalk.cyan('CURRENT SCORE\n' + columnify(scores, {columns: ['TEAM1', 'TEAM2']}) + chalk.red.bold(`\n${currentPlayer.name}`) + `, hit enter to start.`));
+			player.write(chalk.cyan('CURRENT SCORE\n' + columnify(scores, { columns: ['TEAM1', 'TEAM2'] }) + chalk.red.bold(`\n${currentPlayer.name}`) + ', hit enter to start.'));
 			player.removeAllListeners('data');
 		});
 		currentPlayer.on('data', this.start.bind(this));

@@ -27,10 +27,11 @@ const utils = {
 		}, 750)
 	},
 	randomTimeGenerator: (multiplyer) => {
-    let rand = Math.random(); 
-		let int = Math.round(rand * 333 + 1); 
+    let rand = Math.random();
+		let int = Math.round(rand * 7 + 4) * 0.1;
+		console.log(int * multiplyer);
     return int * multiplyer;
-	}	
+	}
 };
 
 module.exports = utils

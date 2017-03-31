@@ -24,7 +24,7 @@ telnetServer.on('connection', (connection) => {
 	connection.write(chalk.cyan('Tell us your name: '));
 
 	connection.on('end', () => {
-		let idx = connections.indexOf(connection);
+		const idx = connections.indexOf(connection);
 		connections = connections.splice(idx, 1);
 	});
 
@@ -36,8 +36,8 @@ telnetServer.on('connection', (connection) => {
 		team1Names.push('');
 		team2Names.push('');
 
-		let playerPairs = _.zipObject(team1Names, team2Names);
-		return chalk.cyan('You\'re playing with:\n') + columnify(playerPairs, {columns: ['TEAM1', 'TEAM2']}) + chalk.cyan('\nWhen all players have joined\npress ENTER to start!');
+		const playerPairs = _.zipObject(team1Names, team2Names);
+		return chalk.cyan('You\'re playing with:\n') + columnify(playerPairs, { columns: ['TEAM1', 'TEAM2'] }) + chalk.cyan('\nWhen all players have joined\npress ENTER to start!');
 	};
 
 	const preGame = (input) => {

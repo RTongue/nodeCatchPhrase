@@ -4,7 +4,7 @@
   "description": "An implementation of Catch Phrase for node using JavaScript terminology",
   "main": "game.js",
   "scripts": {
-    "start": "node play.js",
+    "start": "node ./app/play.js",
     "test": "mocha --watch"
   },
   "author": "Robbyn Tongue",
