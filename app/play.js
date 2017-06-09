@@ -42,9 +42,6 @@ telnetServer.on('connection', (connection) => {
 
 	const preGame = (input) => {
 		if (input && input.includes(13)) {
-			// connections.forEach(cnxn => {
-			// 	cnxn.removeAllListeners('data');
-			// });
 			newGame.allPlayers = connections;
 			newGame.start();
 		} else {
