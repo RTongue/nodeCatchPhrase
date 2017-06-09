@@ -1,7 +1,7 @@
 {
   "name": "nodecatchphrase",
   "version": "1.0.0",
-  "description": "An implementation of Catch Phrase for node using JavaScript terminology",
+  "description": "An implementation of Catch Phrase for Node using JavaScript terminology",
   "main": "game.js",
   "scripts": {
     "start": "node ./app/play.js",
