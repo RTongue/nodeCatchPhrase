@@ -6,6 +6,8 @@ A fun way to practice JavaScript terminology in the console! nodeCatchPhrase is 
 
 `git clone https://github.com/RTongue/nodeCatchPhrase.git`
 
+`cd nodeCatchPhrase`
+
 `npm install`
 
 `npm start`
